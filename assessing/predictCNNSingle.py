@@ -9,9 +9,9 @@ sys.path.append('../tensorflow-mnist/mnist')
 
 # model
 import model
-with tf.variable_scope("simple"):
+with tf.variable_scope("convolutional"):
     x = tf.placeholder("float", [None, 784])
-    y, variables = model.simple(x)
+    y, variables, keep_prob = model.convolutional(x)
 
 saver = tf.train.Saver(variables)
 init = tf.initialize_all_variables()
@@ -26,13 +26,14 @@ def estimationProbs(probs):
 
 with tf.Session() as sess:
      # Restore variables from disk.
-	saver.restore(sess, "../tensorflow-mnist/mnist/data/simple.ckpt")
+	saver.restore(sess, "../tensorflow-mnist/mnist/data/convolutional.ckpt")
 	print("Model restored.")
 	prediction = tf.argmax(y, 1)
-	print("predictions", prediction.eval(feed_dict={x: data.test.images[6000].reshape(1,784)}, session=sess))
+	print(data.test.labels[6000])
+	print("predictions", prediction.eval(feed_dict={x: data.test.images[6000].reshape(1,784), keep_prob: 1.0}, session=sess))
 	probabilities = y
 	#note to get a single output need to 
-	prob = probabilities.eval(feed_dict={x: data.test.images[6000].reshape(1,784)}, session=sess)
+	prob = probabilities.eval(feed_dict={x: data.test.images[6000].reshape(1,784), keep_prob: 1.0}, session=sess)
 	print("probabilities", prob[0])
 	print("probabilities", prob[0][7])
 	estimationProbs(prob)
