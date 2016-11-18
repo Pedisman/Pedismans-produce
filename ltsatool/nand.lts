@@ -1,0 +1,5 @@
+OUTPUT(N = 1) = OUTPUT[0],
+OUTPUT[i:0..N] = (in[0][0] -> OUTPUT[1]
+				| in[0][1] -> OUTPUT[1]
+				| in[1][0] -> OUTPUT[1]
+				| in[1][1] -> OUTPUT[0]).

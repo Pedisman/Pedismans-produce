@@ -1,0 +1,9 @@
+[global]
+floatX = float32
+device = gpu
+
+[nvcc]
+flags=-LC:\Anaconda\libs
+compiler_bindir=C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin
+
+#https://github.com/Theano/Theano/issues/3963

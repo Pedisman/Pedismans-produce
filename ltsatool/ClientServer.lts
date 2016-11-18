@@ -1,0 +1,5 @@
+CLIENT = (call->wait->continue->CLIENT).
+SERVER = (request->service->reply->SERVER).
+
+||CLIENT_SERVER(N=3) = (a[i:1..N]:CLIENT || SERVER)
+				/{call/request, reply/wait}.
