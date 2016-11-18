@@ -1,37 +1,33 @@
 import os
 import tensorflow as tf
 
+import numpy as np
+
 from tensorflow.examples.tutorials.mnist import input_data
 data = input_data.read_data_sets("/tmp/data/", one_hot=True)
+
+#### load image
+import cv2
+
+filename = 'digit4.PNG'
+image = cv2.imread(filename, 0)
+
+cv2.imshow('yo', image)
+cv2.waitKey(0)
 
 import sys
 sys.path.append('../tensorflow-mnist/mnist')
 
 # model
 import model
-with tf.variable_scope("simple"):
+with tf.variable_scope("convolutional"):
     x = tf.placeholder("float", [None, 784])
-    y, variables = model.simple(x)
+    y, variables, keep_prob = model.convolutional(x)
 
 saver = tf.train.Saver(variables)
 init = tf.initialize_all_variables()
 
-#### load image
-import cv2
-
-filename = 'digit9.PNG'
-image = cv2.imread(filename, 0)
-
-cv2.imshow('yo', image)
-cv2.waitKey(0)
-
-#print(data.test.images[0])
-
-def estimationProbs(probs):
-	sum = 0.0
-	for i in range(0,10):
-		sum += prob[0][i]
-	print(sum)
+print(data.test.images[0])
 
 def estimationProbs(probs):
 	sum = 0.0
@@ -70,10 +66,10 @@ def process(image, Nshape = (28, 28)):
 
 def predictTheThang(image):
 	prediction = tf.argmax(y, 1)
-	print("predictions", prediction.eval(feed_dict={x: image.reshape(1,784)}, session=sess))
+	print("predictions", prediction.eval(feed_dict={x: image.reshape(1,784), keep_prob: 1.0}, session=sess))
 	probabilities = y
 	#note to get a single output need to 
-	prob = probabilities.eval(feed_dict={x: image.reshape(1,784)}, session=sess)
+	prob = probabilities.eval(feed_dict={x: image.reshape(1,784), keep_prob: 1.0}, session=sess)
 	print("probabilities", prob[0])
 	print("probabilities", prob[0][7])
 	estimationProbs(prob)
@@ -83,7 +79,19 @@ def predictTheThang(image):
 
 with tf.Session() as sess:
      # Restore variables from disk.
-	saver.restore(sess, "../tensorflow-mnist/mnist/data/simple.ckpt")
+	saver.restore(sess, "../tensorflow-mnist/mnist/data/convolutional2.ckpt")
 	print("Model restored.")
 	predictTheThang(process(image))
+	#predictTheThang(data.test.images[800])
+	'''
+	prediction = tf.argmax(y, 1)
+	print(data.test.labels[6000])
+	print("predictions", prediction.eval(feed_dict={x: data.test.images[6000].reshape(1,784), keep_prob: 1.0}, session=sess))
+	probabilities = y
+	#note to get a single output need to 
+	prob = probabilities.eval(feed_dict={x: data.test.images[6000].reshape(1,784), keep_prob: 1.0}, session=sess)
+	print("probabilities", prob[0])
+	print("probabilities", prob[0][7])
+	estimationProbs(prob)
+	'''
 	#print(sess.run(accuracy, feed_dict={x: data.test.images, y_: data.test.labels}))
