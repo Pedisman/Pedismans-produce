@@ -152,7 +152,8 @@ def calcSecondMove(movePair):
 	possibleMoves = []
 	for move in eightInitial:
 		if move[0] == movePair[0]:
-			pass
+			passtimb5225
+			
 		else:
 			possibleMoves += [move]
 	return possibleMoves
@@ -185,6 +186,11 @@ def calculateBranches(moveset, boxes, boxesProbs, numParticles, filterThresh = 1
 	#determine the likeliness of a given move considering both the measuredProb and the move likeliness
 	combinedOut = combineNNandChessEngine(measureProbs, particleDistribution)
 	#print(combinedOut)
+	print(combinedOut)
+	
+	#threeLargest = find3Largest(combinedOut)
+	#print(threeLargest)
+	
 	
 	filteredOutput = removeBelowThreshold(combinedOut, filterThresh)
 	
