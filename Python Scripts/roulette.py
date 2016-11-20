@@ -109,9 +109,14 @@ print(combinedOut)
 '''
 
 def calcBestMove(list):
+	if list == []:
+		return list
+	
 	bestMove = list[0]
 	for move in list:
-		if move[1] > bestMove[1]:
+		if move == []:
+			pass
+		elif move[1] > bestMove[1]:
 			bestMove = move
 	return bestMove
 
@@ -127,7 +132,10 @@ def scaleToTotal(input, desiredTotal):
 	subList = [i[1] for i in input]
 	divider = sum(subList)
 	#print(divider)
-	multiplier = desiredTotal/divider
+	if divider == 0:
+		multiplier = 1
+	else:
+		multiplier = desiredTotal/divider
 	#print(multiplier)
 	summer = 0
 	for item in input:
@@ -152,8 +160,7 @@ def calcSecondMove(movePair):
 	possibleMoves = []
 	for move in eightInitial:
 		if move[0] == movePair[0]:
-			passtimb5225
-			
+			pass
 		else:
 			possibleMoves += [move]
 	return possibleMoves
@@ -224,6 +231,8 @@ for moveset in secondMoves:
 	bestMove = calcBestMove(moveset)
 	bests += [bestMove]
 
+print(bests)	
+	
 overalBest = calcBestMove(bests)
 print('overalBest is:')
 print(overalBest)
