@@ -171,18 +171,26 @@ def find3Largest(list):
 	third = ['empty', 0]
 	for move in list:
 		if move[1] >= first[1]:
-			first = move
+			third = second
 			second = first
-			third = second
+			first = move
+			print('first', first)
+			print('second', second)
+			print('third', third)
 		elif move[1] >= second[1]:
-			second = move
 			third = second
+			second = move
+			print('second', second)
+			print('third', third)
 		elif move[1] >= third[1]:
 			third = move
+			print('third', third)
 	return [first, second, third]
 	
-	
-	
+randList = [['a1', 20], ['c3', 40], ['a3', 2], ['d3', 30], ['a7', 5], ['c2', 8], ['a5', 6], ['d4', 4]]
+print(find3Largest(randList))
+
+'''	
 def calculateBranches(moveset, boxes, boxesProbs, numParticles, filterThresh = 1):
 	#calculate the move probability given the NN character recognition output
 	measureProbs = moveProbFromNNv2(moveset, boxes, boxesProbs)
@@ -236,7 +244,7 @@ print(bests)
 overalBest = calcBestMove(bests)
 print('overalBest is:')
 print(overalBest)
-	
+'''
 
 '''	
 class assignParticleToMove(object):
