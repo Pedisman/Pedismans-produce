@@ -46,15 +46,21 @@ boxes = [box1, box2]
 #move likeliness (move likelinesses will be the output of the neural network in softmax)
 #left to right a, b, c, d
 moveLikelinessBox1Round1 = [0.2, 0.05, 0.7, 0.05]
+#moveLikelinessBox1Round1 = [0.05, 0.05, 0.85, 0.05]
 #left to right 1,2,3,4
+#moveLikelinessBox2Round1 = [0.05, 0.85, 0.05, 0.05]
+#moveLikelinessBox2Round1 = [0.85, 0.05, 0.05, 0.05]
 moveLikelinessBox2Round1 = [0.05, 0.85, 0.05, 0.05]
-	
+
+#List containing the list of all box probabilities	
 boxesProbs = [moveLikelinessBox1Round1, moveLikelinessBox2Round1] 	
 	
 #left to right a, b, c, d
 moveLikelinessBox1Round2 = [0.6, 0.25, 0.05, 0.05]
 #left to right 1,2,3,4
 moveLikelinessBox2Round2 = [0.05, 0.85, 0.05, 0.05]
+	
+boxesProbs2 = [moveLikelinessBox1Round2, moveLikelinessBox2Round2]
 	
 def moveProbFromNN(moveset, boxes, boxesProbs):
 	outputProb = [] #empty output array
@@ -65,6 +71,16 @@ def moveProbFromNN(moveset, boxes, boxesProbs):
 			probOfMove *= boxesProbs[i][boxes[i].index(move[0][i])]
 		outputProb += [[move[0], probOfMove]]
 	return outputProb
+	
+def moveProbFromNNv2(moveset, boxes, boxesProbs):
+	outputProb = [] #empty output array
+	numBox = len(boxes)
+	for move in moveset:
+		probOfMove = 0
+		for i in range(numBox):
+			probOfMove += boxesProbs[i][boxes[i].index(move[0][i])]
+		outputProb += [[move[0], probOfMove/numBox]]
+	return outputProb	
 
 def moveProbFromChessEngine(moveset, numParticles):
 	subList = [moveset[i][1] for i in range(len(moveset))] 
@@ -79,9 +95,10 @@ def combineNNandChessEngine(movesetNN, movesetChess):
 	for i in range(len(movesetNN)):
 		#print(movesetNN[i][1], movesetChess[i][1])
 		particles = throwAttempts(movesetNN[i][1], movesetChess[i][1])
-		outputProb += [movesetNN[i][0], particles]
+		outputProb += [[movesetNN[i][0], particles]]
 	return outputProb
-	
+
+'''	
 measureProbs = moveProbFromNN(possibleMoveSet1, boxes, boxesProbs)		
 print(measureProbs)
 moveDistribution = moveProbFromChessEngine(possibleMoveSet1, 100)
@@ -89,6 +106,122 @@ print(moveDistribution)
 
 combinedOut = combineNNandChessEngine(measureProbs, moveDistribution)
 print(combinedOut)
+'''
+
+def calcBestMove(list):
+	bestMove = list[0]
+	for move in list:
+		if move[1] > bestMove[1]:
+			bestMove = move
+	return bestMove
+
+def removeBelowThreshold(list, threshold):
+	copyList = []
+	for item in list:
+		if item[1] >= threshold: #same as <= threshold remove item
+			copyList += [item]
+	return copyList
+
+def scaleToTotal(input, desiredTotal):
+	copyList = []
+	subList = [i[1] for i in input]
+	divider = sum(subList)
+	#print(divider)
+	multiplier = desiredTotal/divider
+	#print(multiplier)
+	summer = 0
+	for item in input:
+		copyList += [[item[0], item[1]*multiplier]]
+		summer += item[1]*multiplier	
+	#print(summer)
+	secondaryList = moveProbFromChessEngine(copyList, desiredTotal - summer)
+	#print(secondaryList)
+	for i in range(len(copyList)):
+		copyList[i][1] += secondaryList[i][1]
+	return copyList
+
+def checkSum(list):
+	summ = 0
+	for item in list:
+		summ += item[1]
+	return summ
+	
+def calcSecondMove(movePair):
+	movesetProb1 = 1
+	eightInitial = [['a2', movesetProb1], ['a3', movesetProb1], ['b2', movesetProb1], ['b3', movesetProb1], ['c2', movesetProb1], ['c3', movesetProb1], ['d2', movesetProb1], ['d3', movesetProb1]]
+	possibleMoves = []
+	for move in eightInitial:
+		if move[0] == movePair[0]:
+			pass
+		else:
+			possibleMoves += [move]
+	return possibleMoves
+
+def find3Largest(list):
+	first = ['empty', 0]
+	second = ['empty', 0]
+	third = ['empty', 0]
+	for move in list:
+		if move[1] >= first[1]:
+			first = move
+			second = first
+			third = second
+		elif move[1] >= second[1]:
+			second = move
+			third = second
+		elif move[1] >= third[1]:
+			third = move
+	return [first, second, third]
+	
+	
+	
+def calculateBranches(moveset, boxes, boxesProbs, numParticles, filterThresh = 1):
+	#calculate the move probability given the NN character recognition output
+	measureProbs = moveProbFromNNv2(moveset, boxes, boxesProbs)
+	#print(measureProbs)
+	#calculate the particle distribution given the probability for each move (equal at this stage)
+	particleDistribution = moveProbFromChessEngine(moveset, numParticles)
+	#print(particleDistribution)
+	#determine the likeliness of a given move considering both the measuredProb and the move likeliness
+	combinedOut = combineNNandChessEngine(measureProbs, particleDistribution)
+	#print(combinedOut)
+	
+	filteredOutput = removeBelowThreshold(combinedOut, filterThresh)
+	
+	scaled = scaleToTotal(filteredOutput, numParticles)
+	#print(scaled)
+	
+	#print(checkSum(scaled))
+	
+	#resample to bring particle count back to numParticles
+	#combinedOut = moveProbFromChessEngine(filteredOutput, numParticles)
+	#return combinedOut
+	return scaled
+	
+output = calculateBranches(possibleMoveSet1, boxes, boxesProbs, 200, filterThresh = 1)			
+print(output)
+bestMove = calcBestMove(output)
+print(bestMove)
+
+print('second move sets')
+
+secondMoves = []
+for move in output:
+	#print('move: ', move, calcSecondMove(move))
+	branch = calculateBranches(calcSecondMove(move), boxes, boxesProbs2, move[1])
+	secondMoves += [branch]
+	print(branch)
+	print('')
+
+bests = []
+for moveset in secondMoves:
+	bestMove = calcBestMove(moveset)
+	bests += [bestMove]
+
+overalBest = calcBestMove(bests)
+print('overalBest is:')
+print(overalBest)
+	
 
 '''	
 class assignParticleToMove(object):
